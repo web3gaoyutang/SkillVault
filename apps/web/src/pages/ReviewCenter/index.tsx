@@ -1,6 +1,6 @@
 import React from 'react';
-import { Table, Card, Button, Space, Typography, Modal, Input, message, Empty, Spin } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Table, Card, Button, Space, Typography, Modal, Input, message, Empty, Spin, Tag } from 'antd';
+import { CheckOutlined, CloseOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { versionAPI } from '../../api/version';
 import PageHeader from '../../components/PageHeader';
@@ -14,7 +14,6 @@ const ReviewCenter: React.FC = () => {
   const [reviewModal, setReviewModal] = React.useState<{ version: SkillVersion; action: string } | null>(null);
   const [comment, setComment] = React.useState('');
 
-  // Use a special endpoint that returns pending reviews
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['pending-reviews'],
     queryFn: async () => {
@@ -42,35 +41,66 @@ const ReviewCenter: React.FC = () => {
   });
 
   const columns = [
-    { title: 'Version', dataIndex: 'version', render: (v: string) => <Text strong>v{v}</Text> },
-    { title: 'Skill', dataIndex: 'skill_name' },
-    { title: 'Organization', dataIndex: 'org_name' },
+    {
+      title: 'Version',
+      dataIndex: 'version',
+      render: (v: string) => (
+        <Tag style={{ borderRadius: 20, background: '#EEF2FF', border: '1px solid #E0E7FF', color: '#6366F1', margin: 0 }}>
+          v{v}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Skill',
+      dataIndex: 'skill_name',
+      render: (v: string) => <Text style={{ color: '#0F172A', fontWeight: 500 }}>{v}</Text>,
+    },
+    {
+      title: 'Organization',
+      dataIndex: 'org_name',
+      render: (v: string) => <Text style={{ color: '#64748B', fontSize: 13 }}>@{v}</Text>,
+    },
     {
       title: 'Status',
       dataIndex: 'status',
       render: (status: string) => <StatusBadge status={status} />,
     },
     { title: 'Changelog', dataIndex: 'changelog', ellipsis: true },
-    { title: 'Created', dataIndex: 'created_at', render: (v: string) => v ? new Date(v).toLocaleDateString() : '-' },
+    {
+      title: 'Created',
+      dataIndex: 'created_at',
+      render: (v: string) => v ? <Text style={{ color: '#94A3B8', fontSize: 13 }}>{new Date(v).toLocaleDateString()}</Text> : '-',
+    },
     {
       title: 'Actions',
       key: 'actions',
       render: (_: unknown, record: SkillVersion & { org_name?: string; skill_name?: string }) => (
-        <Space>
+        <Space size={8}>
           <Button
-            type="primary"
             size="small"
             icon={<CheckOutlined />}
             onClick={() => setReviewModal({ version: record, action: 'approve' })}
-            style={{ background: '#059669', border: 'none' }}
+            style={{
+              background: '#ECFDF5',
+              border: '1px solid #A7F3D0',
+              color: '#059669',
+              borderRadius: 6,
+              fontWeight: 500,
+            }}
           >
             Approve
           </Button>
           <Button
-            danger
             size="small"
             icon={<CloseOutlined />}
             onClick={() => setReviewModal({ version: record, action: 'reject' })}
+            style={{
+              background: '#FFF1F2',
+              border: '1px solid #FECDD3',
+              color: '#E11D48',
+              borderRadius: 6,
+              fontWeight: 500,
+            }}
           >
             Reject
           </Button>
@@ -87,7 +117,11 @@ const ReviewCenter: React.FC = () => {
         {isLoading ? (
           <Spin style={{ display: 'block', margin: '60px auto' }} />
         ) : !reviews?.length ? (
-          <Empty description="No pending reviews" style={{ margin: '60px 0' }} />
+          <Empty
+            image={<SafetyOutlined style={{ fontSize: 48, color: '#CBD5E1' }} />}
+            description={<Text style={{ color: '#94A3B8' }}>No pending reviews</Text>}
+            style={{ margin: '60px 0' }}
+          />
         ) : (
           <Table
             dataSource={reviews}

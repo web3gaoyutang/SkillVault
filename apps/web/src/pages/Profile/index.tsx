@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Tabs, Descriptions, Typography, Spin, Table, Button, Space, Modal, Form, Input, message, Empty } from 'antd';
-import { PlusOutlined, DeleteOutlined, KeyOutlined, CopyOutlined } from '@ant-design/icons';
+import { Card, Tabs, Typography, Spin, Table, Button, Space, Modal, Form, Input, message, Empty, Avatar } from 'antd';
+import { PlusOutlined, DeleteOutlined, KeyOutlined, CopyOutlined, UserOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authAPI } from '../../api/auth';
 import { tokenAPI } from '../../api/token';
@@ -53,13 +53,17 @@ const Profile: React.FC = () => {
   }
 
   const tokenColumns = [
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Prefix', dataIndex: 'token_prefix', render: (v: string) => <Text code>{v}...</Text> },
-    { title: 'Last Used', dataIndex: 'last_used_at', render: (v: string) => v ? new Date(v).toLocaleDateString() : 'Never' },
+    { title: 'Name', dataIndex: 'name', render: (v: string) => <Text style={{ color: '#0F172A', fontWeight: 500 }}>{v}</Text> },
+    { title: 'Prefix', dataIndex: 'token_prefix', render: (v: string) => <Text code style={{ fontSize: 12 }}>{v}...</Text> },
+    { title: 'Last Used', dataIndex: 'last_used_at', render: (v: string) => v ? new Date(v).toLocaleDateString() : <Text style={{ color: '#94A3B8' }}>Never</Text> },
     { title: 'Created', dataIndex: 'created_at', render: (v: string) => new Date(v).toLocaleDateString() },
-    { title: '', key: 'actions', render: (_: unknown, record: APIToken) => (
-      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteToken.mutate(record.id)} />
-    )},
+    {
+      title: '',
+      key: 'actions',
+      render: (_: unknown, record: APIToken) => (
+        <Button size="small" danger icon={<DeleteOutlined />} onClick={() => deleteToken.mutate(record.id)} />
+      ),
+    },
   ];
 
   return (
@@ -71,12 +75,43 @@ const Profile: React.FC = () => {
           key: 'info',
           label: 'Profile Info',
           children: (
-            <Card style={{ borderRadius: 12 }}>
-              <Descriptions bordered column={1}>
-                <Descriptions.Item label="Username">{user?.username}</Descriptions.Item>
-                <Descriptions.Item label="Email">{user?.email}</Descriptions.Item>
-                <Descriptions.Item label="Display Name">{user?.display_name || '-'}</Descriptions.Item>
-              </Descriptions>
+            <Card style={{ borderRadius: 12, maxWidth: 560 }}>
+              {/* User identity block */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28, paddingBottom: 24, borderBottom: '1px solid #F1F5F9' }}>
+                <Avatar
+                  size={56}
+                  style={{ background: 'linear-gradient(135deg, #6366F1, #A78BFA)', fontSize: 22, fontWeight: 700, flexShrink: 0 }}
+                >
+                  {user?.username?.[0]?.toUpperCase() || 'U'}
+                </Avatar>
+                <div>
+                  <Text strong style={{ fontSize: 17, color: '#0F172A', display: 'block' }}>
+                    {user?.display_name || user?.username}
+                  </Text>
+                  <Text style={{ color: '#64748B', fontSize: 13 }}>@{user?.username}</Text>
+                </div>
+              </div>
+
+              <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                <div>
+                  <Text style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>
+                    Username
+                  </Text>
+                  <Text style={{ color: '#1E293B', fontSize: 14 }}>{user?.username}</Text>
+                </div>
+                <div>
+                  <Text style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>
+                    Email
+                  </Text>
+                  <Text style={{ color: '#1E293B', fontSize: 14 }}>{user?.email}</Text>
+                </div>
+                <div>
+                  <Text style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>
+                    Display Name
+                  </Text>
+                  <Text style={{ color: '#1E293B', fontSize: 14 }}>{user?.display_name || '—'}</Text>
+                </div>
+              </Space>
             </Card>
           ),
         },
@@ -85,13 +120,19 @@ const Profile: React.FC = () => {
           label: <><KeyOutlined /> API Tokens</>,
           children: (
             <Card style={{ borderRadius: 12 }}>
-              <div style={{ marginBottom: 16, textAlign: 'right' }}>
+              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <Text strong style={{ color: '#0F172A' }}>API Tokens</Text>
+                  <Text style={{ color: '#94A3B8', fontSize: 13, display: 'block' }}>
+                    Tokens for CLI and automation access
+                  </Text>
+                </div>
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => { setCreateModalOpen(true); setNewTokenValue(''); }}>
                   Create Token
                 </Button>
               </div>
               {!tokens?.length ? (
-                <Empty description="No API tokens" />
+                <Empty description="No API tokens yet" style={{ margin: '40px 0' }} />
               ) : (
                 <Table
                   dataSource={tokens}
@@ -117,7 +158,11 @@ const Profile: React.FC = () => {
       >
         {newTokenValue ? (
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <Text type="warning" strong>Copy this token now. You won't be able to see it again.</Text>
+            <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 8, padding: '10px 14px' }}>
+              <Text style={{ color: '#92400E', fontSize: 13 }}>
+                Copy this token now — you won't be able to see it again.
+              </Text>
+            </div>
             <div className="code-block">
               <code style={{ wordBreak: 'break-all' }}>{newTokenValue}</code>
               <button className="copy-btn" onClick={copyToken}><CopyOutlined /> Copy</button>

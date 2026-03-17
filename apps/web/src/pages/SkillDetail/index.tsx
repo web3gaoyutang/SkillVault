@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Typography, Tag, Table, Spin, Tabs, Card, Space, Button, message } from 'antd';
-import { CopyOutlined, DownloadOutlined, CloudOutlined } from '@ant-design/icons';
+import { CopyOutlined, DownloadOutlined, CodeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { skillAPI } from '../../api/skill';
 import { versionAPI } from '../../api/version';
@@ -44,31 +44,44 @@ const SkillDetail: React.FC = () => {
         ]}
       />
 
-      {/* Hero section */}
+      {/* Info header — light card style */}
       <div className="gradient-header">
-        <Space direction="vertical" size={8}>
-          <Space>
-            <CloudOutlined style={{ fontSize: 20 }} />
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>
+        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+          <Space size={6}>
+            <CodeOutlined style={{ fontSize: 14, color: '#94A3B8' }} />
+            <Text style={{ color: '#64748B', fontSize: 13 }}>
               {org}/{name}
             </Text>
           </Space>
-          <Paragraph style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, margin: 0, maxWidth: 600 }}>
+          <Paragraph style={{ color: '#1E293B', fontSize: 15, margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
             {skill?.description || 'No description provided'}
           </Paragraph>
-          <Space style={{ marginTop: 8 }}>
+          <Space wrap size={6} style={{ marginTop: 4 }}>
             {skill?.tags?.map((t) => (
-              <Tag key={t} style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none', borderRadius: 12 }}>
+              <Tag key={t} style={{
+                background: '#F0FDF4',
+                color: '#059669',
+                border: '1px solid #D1FAE5',
+                borderRadius: 20,
+                fontSize: 12,
+                margin: 0,
+              }}>
                 {t}
               </Tag>
             ))}
           </Space>
-          <Space style={{ marginTop: 8 }}>
-            <Tag color="blue">{skill?.visibility}</Tag>
-            {skill?.latest_version && <Tag color="green">v{skill.latest_version}</Tag>}
+          <Space wrap size={8} style={{ marginTop: 4 }}>
+            <Tag style={{ background: '#EEF2FF', color: '#6366F1', border: '1px solid #E0E7FF', borderRadius: 20, margin: 0 }}>
+              {skill?.visibility}
+            </Tag>
+            {skill?.latest_version && (
+              <Tag style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', borderRadius: 20, margin: 0 }}>
+                v{skill.latest_version}
+              </Tag>
+            )}
             <Space size={4}>
-              <DownloadOutlined style={{ color: 'rgba(255,255,255,0.7)' }} />
-              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{skill?.download_count || 0} downloads</Text>
+              <DownloadOutlined style={{ color: '#94A3B8', fontSize: 12 }} />
+              <Text style={{ color: '#64748B', fontSize: 13 }}>{skill?.download_count || 0} downloads</Text>
             </Space>
           </Space>
         </Space>
@@ -90,10 +103,29 @@ const SkillDetail: React.FC = () => {
                   </div>
                 </Card>
                 <Card title="Details" style={{ borderRadius: 12 }}>
-                  <Space direction="vertical" size={8}>
-                    <div><Text strong>Runtimes: </Text>{skill?.runtimes?.map(r => <Tag key={r}>{r}</Tag>)}</div>
-                    <div><Text strong>Visibility: </Text><Tag>{skill?.visibility}</Tag></div>
-                    <div><Text strong>Latest Version: </Text><Text>{skill?.latest_version || 'None'}</Text></div>
+                  <Space direction="vertical" size={10}>
+                    <div>
+                      <Text style={{ color: '#64748B', fontSize: 13 }}>Runtimes</Text>
+                      <div style={{ marginTop: 4 }}>
+                        {skill?.runtimes?.map(r => (
+                          <Tag key={r} style={{ borderRadius: 20, background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569' }}>{r}</Tag>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <Text style={{ color: '#64748B', fontSize: 13 }}>Visibility</Text>
+                      <div style={{ marginTop: 4 }}>
+                        <Tag style={{ borderRadius: 20, background: '#EEF2FF', border: '1px solid #E0E7FF', color: '#6366F1' }}>
+                          {skill?.visibility}
+                        </Tag>
+                      </div>
+                    </div>
+                    <div>
+                      <Text style={{ color: '#64748B', fontSize: 13 }}>Latest Version</Text>
+                      <div style={{ marginTop: 4 }}>
+                        <Text style={{ fontWeight: 500, color: '#0F172A' }}>{skill?.latest_version || 'None'}</Text>
+                      </div>
+                    </div>
                   </Space>
                 </Card>
               </Space>
@@ -109,7 +141,7 @@ const SkillDetail: React.FC = () => {
                   rowKey="id"
                   pagination={false}
                   columns={[
-                    { title: 'Version', dataIndex: 'version', render: (v: string) => <Text strong>v{v}</Text> },
+                    { title: 'Version', dataIndex: 'version', render: (v: string) => <Text strong style={{ color: '#0F172A' }}>v{v}</Text> },
                     {
                       title: 'Status',
                       dataIndex: 'status',

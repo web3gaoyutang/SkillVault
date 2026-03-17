@@ -1,6 +1,6 @@
 import React from 'react';
 import { Steps, Form, Input, Select, Button, Upload, Card, Space, Typography, message, Result } from 'antd';
-import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
+import { InboxOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { organizationAPI } from '../../api/organization';
@@ -64,28 +64,37 @@ const SkillUpload: React.FC = () => {
         { title: 'Done', description: 'Skill created' },
       ];
 
-  const currentStep = isNewVersion ? step : step;
+  const isDone = (isNewVersion && step === 1) || (!isNewVersion && step === 2);
+  const isUploadStep = (isNewVersion && step === 0) || (!isNewVersion && step === 1);
+  const isMetaStep = !isNewVersion && step === 0;
 
   return (
     <div>
       <PageHeader
-        title={isNewVersion ? `Upload New Version` : 'Upload Skill'}
+        title={isNewVersion ? 'Upload New Version' : 'Upload Skill'}
         breadcrumbs={isNewVersion
           ? [{ label: 'Catalog', path: '/' }, { label: `${existingOrg}/${existingName}`, path: `/skills/${existingOrg}/${existingName}` }, { label: 'New Version' }]
           : [{ label: 'Catalog', path: '/' }, { label: 'Upload Skill' }]
         }
       />
 
-      <Card style={{ borderRadius: 12, maxWidth: 700, margin: '0 auto' }}>
-        <Steps current={currentStep} items={steps} style={{ marginBottom: 32 }} />
+      <Card style={{ borderRadius: 12, maxWidth: 680, margin: '0 auto' }}>
+        <Steps
+          current={step}
+          items={steps}
+          style={{ marginBottom: 36 }}
+        />
 
-        {/* Step 0: Metadata (skip if new version) */}
-        {!isNewVersion && step === 0 && (
+        {/* Step 0: Metadata */}
+        {isMetaStep && (
           <Form form={metadataForm} layout="vertical" onFinish={(v) => createSkill.mutate(v)}>
             <Form.Item name="org_name" label="Organization" rules={[{ required: true }]}>
-              <Select placeholder="Select organization" options={orgs?.map(o => ({ label: o.display_name || o.name, value: o.name })) || []} />
+              <Select
+                placeholder="Select organization"
+                options={orgs?.map(o => ({ label: o.display_name || o.name, value: o.name })) || []}
+              />
             </Form.Item>
-            <Form.Item name="name" label="Skill Name" rules={[{ required: true, pattern: /^[a-z0-9-]+$/, message: 'Lowercase, numbers, hyphens' }]}>
+            <Form.Item name="name" label="Skill Name" rules={[{ required: true, pattern: /^[a-z0-9-]+$/, message: 'Lowercase, numbers, hyphens only' }]}>
               <Input placeholder="my-skill" />
             </Form.Item>
             <Form.Item name="display_name" label="Display Name">
@@ -110,14 +119,14 @@ const SkillUpload: React.FC = () => {
             <Form.Item name="tags" label="Tags">
               <Select mode="tags" placeholder="Add tags" />
             </Form.Item>
-            <Button type="primary" htmlType="submit" loading={createSkill.isPending} style={{ width: '100%' }}>
+            <Button type="primary" htmlType="submit" loading={createSkill.isPending} block style={{ height: 40 }}>
               Next: Upload Artifact
             </Button>
           </Form>
         )}
 
         {/* Step 1: Upload */}
-        {((isNewVersion && step === 0) || (!isNewVersion && step === 1)) && (
+        {isUploadStep && (
           <Form form={versionForm} layout="vertical" onFinish={(v) => uploadVersion.mutate(v)}>
             <Form.Item name="version" label="Version" rules={[{ required: true, message: 'Enter semver version' }]}>
               <Input placeholder="1.0.0" />
@@ -130,10 +139,17 @@ const SkillUpload: React.FC = () => {
                 beforeUpload={(f) => { setFile(f); return false; }}
                 maxCount={1}
                 accept=".tar.gz,.tgz,.zip"
+                style={{ borderRadius: 8 }}
               >
-                <p className="ant-upload-drag-icon"><InboxOutlined /></p>
-                <p>Click or drag file to upload</p>
-                <p className="ant-upload-hint">.tar.gz, .tgz, or .zip (max 50MB)</p>
+                <p className="ant-upload-drag-icon" style={{ marginBottom: 8 }}>
+                  <InboxOutlined style={{ color: '#6366F1', fontSize: 36 }} />
+                </p>
+                <p style={{ color: '#374151', fontWeight: 500, marginBottom: 4 }}>
+                  Click or drag file to upload
+                </p>
+                <p style={{ color: '#94A3B8', fontSize: 13 }}>
+                  .tar.gz, .tgz, or .zip — max 50 MB
+                </p>
               </Dragger>
             </Form.Item>
             <Button
@@ -141,7 +157,8 @@ const SkillUpload: React.FC = () => {
               htmlType="submit"
               loading={uploadVersion.isPending}
               disabled={!file}
-              style={{ width: '100%' }}
+              block
+              style={{ height: 40 }}
             >
               Upload & Create Version
             </Button>
@@ -149,10 +166,10 @@ const SkillUpload: React.FC = () => {
         )}
 
         {/* Done */}
-        {((isNewVersion && step === 1) || (!isNewVersion && step === 2)) && (
+        {isDone && (
           <Result
-            status="success"
-            title={isNewVersion ? 'Version uploaded successfully!' : 'Skill created successfully!'}
+            icon={<CheckCircleOutlined style={{ color: '#10B981' }} />}
+            title={isNewVersion ? 'Version uploaded!' : 'Skill created!'}
             subTitle="Your artifact has been uploaded and a security scan has been queued."
             extra={[
               <Button type="primary" key="view" onClick={() => navigate(`/skills/${createdSkill?.org}/${createdSkill?.name}`)}>

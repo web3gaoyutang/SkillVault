@@ -32,12 +32,13 @@ const Catalog: React.FC = () => {
     <div>
       <PageHeader title="Skill Catalog" />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      {/* Stats row */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 28 }}>
         <Col xs={12} sm={6}>
           <StatsCard
             title="Total Skills"
             value={totalSkills}
-            icon={<AppstoreOutlined style={{ color: '#7C3AED' }} />}
+            icon={<AppstoreOutlined style={{ color: '#6366F1' }} />}
             className="stats-card-purple"
           />
         </Col>
@@ -45,7 +46,7 @@ const Catalog: React.FC = () => {
           <StatsCard
             title="Published"
             value={data?.items?.filter(s => s.latest_version).length || 0}
-            icon={<CloudUploadOutlined style={{ color: '#2563EB' }} />}
+            icon={<CloudUploadOutlined style={{ color: '#3B82F6' }} />}
             className="stats-card-blue"
           />
         </Col>
@@ -53,7 +54,7 @@ const Catalog: React.FC = () => {
           <StatsCard
             title="Organizations"
             value={new Set(data?.items?.map(s => s.org_name)).size || 0}
-            icon={<TeamOutlined style={{ color: '#059669' }} />}
+            icon={<TeamOutlined style={{ color: '#10B981' }} />}
             className="stats-card-green"
           />
         </Col>
@@ -61,18 +62,18 @@ const Catalog: React.FC = () => {
           <StatsCard
             title="Downloads"
             value={data?.items?.reduce((sum, s) => sum + (s.download_count || 0), 0) || 0}
-            icon={<DownloadOutlined style={{ color: '#D97706' }} />}
+            icon={<DownloadOutlined style={{ color: '#F59E0B' }} />}
             className="stats-card-amber"
           />
         </Col>
       </Row>
 
-      <Space style={{ marginBottom: 24, width: '100%' }} direction="vertical" size={12}>
-        <Row gutter={12}>
+      {/* Filters */}
+      <div style={{ marginBottom: 24 }}>
+        <Row gutter={12} wrap={false}>
           <Col flex="auto">
             <Search
               placeholder="Search skills by name, description..."
-              prefix={<SearchOutlined />}
               size="large"
               onSearch={setKeyword}
               allowClear
@@ -108,7 +109,7 @@ const Catalog: React.FC = () => {
             />
           </Col>
         </Row>
-      </Space>
+      </div>
 
       {isLoading ? (
         <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />
@@ -124,14 +125,14 @@ const Catalog: React.FC = () => {
             ))}
           </Row>
           {data.total > 20 && (
-            <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <div style={{ textAlign: 'center', marginTop: 28 }}>
               <Space>
                 {page > 1 && (
-                  <a onClick={() => setPage(page - 1)}>Previous</a>
+                  <a onClick={() => setPage(page - 1)} style={{ color: '#6366F1' }}>← Previous</a>
                 )}
-                <span>Page {page} of {Math.ceil(data.total / 20)}</span>
+                <span style={{ color: '#64748B', fontSize: 13 }}>Page {page} of {Math.ceil(data.total / 20)}</span>
                 {page * 20 < data.total && (
-                  <a onClick={() => setPage(page + 1)}>Next</a>
+                  <a onClick={() => setPage(page + 1)} style={{ color: '#6366F1' }}>Next →</a>
                 )}
               </Space>
             </div>

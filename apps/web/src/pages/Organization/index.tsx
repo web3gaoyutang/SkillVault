@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Button, Typography, Empty, Spin, Modal, Form, Input, message, Space, Tag } from 'antd';
+import { Card, Row, Col, Button, Typography, Empty, Spin, Modal, Form, Input, message, Space } from 'antd';
 import { PlusOutlined, TeamOutlined, RightOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -36,9 +36,8 @@ const Organization: React.FC = () => {
       <PageHeader
         title="My Organizations"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}
-            style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', border: 'none' }}>
-            Create Organization
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            New Organization
           </Button>
         }
       />
@@ -57,29 +56,34 @@ const Organization: React.FC = () => {
                 hoverable
                 className="skill-card"
                 onClick={() => navigate(`/organizations/${org.name}`)}
-                style={{ borderRadius: 12 }}
+                style={{ borderRadius: 12, border: '1px solid #E2E8F0' }}
                 bodyStyle={{ padding: 24 }}
               >
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <Space>
+                <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                  <Space size={12} align="start">
+                    {/* Soft mint icon badge */}
                     <div style={{
                       width: 40, height: 40, borderRadius: 10,
-                      background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                      background: '#ECFDF5',
+                      border: '1px solid #D1FAE5',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
                     }}>
-                      <TeamOutlined style={{ color: '#fff', fontSize: 18 }} />
+                      <TeamOutlined style={{ color: '#059669', fontSize: 18 }} />
                     </div>
                     <div>
-                      <Text strong style={{ fontSize: 16 }}>{org.display_name || org.name}</Text>
+                      <Text strong style={{ fontSize: 15, color: '#0F172A' }}>
+                        {org.display_name || org.name}
+                      </Text>
                       <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>@{org.name}</Text>
+                      <Text style={{ fontSize: 12, color: '#94A3B8' }}>@{org.name}</Text>
                     </div>
                   </Space>
-                  <Paragraph ellipsis={{ rows: 2 }} style={{ color: '#6B7280', margin: 0 }}>
+                  <Paragraph ellipsis={{ rows: 2 }} style={{ color: '#64748B', margin: 0, fontSize: 13 }}>
                     {org.description || 'No description'}
                   </Paragraph>
                   <div style={{ textAlign: 'right' }}>
-                    <RightOutlined style={{ color: '#9CA3AF' }} />
+                    <RightOutlined style={{ color: '#CBD5E1', fontSize: 12 }} />
                   </div>
                 </Space>
               </Card>

@@ -80,29 +80,48 @@ const OrganizationDetail: React.FC = () => {
   const orgSkills = skills?.items?.filter(s => s.org_name === org) || [];
 
   const memberColumns = [
-    { title: 'User', dataIndex: 'username', render: (v: string, r: OrgMember) => (
-      <Space><Text strong>{v}</Text><Text type="secondary">{r.email}</Text></Space>
-    )},
-    { title: 'Role', dataIndex: 'role', render: (role: string, record: OrgMember) => (
-      <Select
-        value={role}
-        size="small"
-        style={{ width: 120 }}
-        onChange={(v) => updateRole.mutate({ userId: record.user_id, role: v })}
-        options={[
-          { label: 'Owner', value: 'owner' },
-          { label: 'Admin', value: 'admin' },
-          { label: 'Developer', value: 'developer' },
-          { label: 'Viewer', value: 'viewer' },
-        ]}
-      />
-    )},
-    { title: 'Joined', dataIndex: 'created_at', render: (v: string) => v ? new Date(v).toLocaleDateString() : '-' },
-    { title: '', key: 'actions', render: (_: unknown, record: OrgMember) => (
-      record.role !== 'owner' && (
-        <Button size="small" danger icon={<DeleteOutlined />} onClick={() => removeMember.mutate(record.user_id)} />
-      )
-    )},
+    {
+      title: 'User',
+      dataIndex: 'username',
+      render: (v: string, r: OrgMember) => (
+        <Space>
+          <Text strong style={{ color: '#0F172A' }}>{v}</Text>
+          <Text style={{ color: '#94A3B8', fontSize: 12 }}>{r.email}</Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Role',
+      dataIndex: 'role',
+      render: (role: string, record: OrgMember) => (
+        <Select
+          value={role}
+          size="small"
+          style={{ width: 120 }}
+          onChange={(v) => updateRole.mutate({ userId: record.user_id, role: v })}
+          options={[
+            { label: 'Owner', value: 'owner' },
+            { label: 'Admin', value: 'admin' },
+            { label: 'Developer', value: 'developer' },
+            { label: 'Viewer', value: 'viewer' },
+          ]}
+        />
+      ),
+    },
+    {
+      title: 'Joined',
+      dataIndex: 'created_at',
+      render: (v: string) => v ? new Date(v).toLocaleDateString() : '-',
+    },
+    {
+      title: '',
+      key: 'actions',
+      render: (_: unknown, record: OrgMember) => (
+        record.role !== 'owner' && (
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => removeMember.mutate(record.user_id)} />
+        )
+      ),
+    },
   ];
 
   return (
@@ -115,20 +134,21 @@ const OrganizationDetail: React.FC = () => {
         ]}
       />
 
+      {/* Light info header */}
       <div className="gradient-header">
-        <Space direction="vertical" size={4}>
-          <Space>
-            <TeamOutlined style={{ fontSize: 20 }} />
-            <Text style={{ color: 'rgba(255,255,255,0.8)' }}>@{org}</Text>
+        <Space direction="vertical" size={8}>
+          <Space size={6}>
+            <TeamOutlined style={{ fontSize: 14, color: '#94A3B8' }} />
+            <Text style={{ color: '#64748B', fontSize: 13 }}>@{org}</Text>
           </Space>
-          <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 15 }}>
+          <Text style={{ color: '#1E293B', fontSize: 15, fontWeight: 400 }}>
             {orgData?.description || 'No description'}
           </Text>
-          <Space style={{ marginTop: 8 }}>
-            <Tag style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none' }}>
+          <Space size={8} style={{ marginTop: 4 }}>
+            <Tag style={{ background: '#F0FDF4', color: '#059669', border: '1px solid #D1FAE5', borderRadius: 20, margin: 0 }}>
               {members?.length || 0} members
             </Tag>
-            <Tag style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none' }}>
+            <Tag style={{ background: '#EEF2FF', color: '#6366F1', border: '1px solid #E0E7FF', borderRadius: 20, margin: 0 }}>
               {orgSkills.length} skills
             </Tag>
           </Space>
@@ -140,7 +160,7 @@ const OrganizationDetail: React.FC = () => {
           key: 'skills',
           label: <><AppstoreOutlined /> Skills</>,
           children: orgSkills.length === 0 ? (
-            <Empty description="No skills in this organization" />
+            <Empty description="No skills in this organization" style={{ margin: '60px 0' }} />
           ) : (
             <Row gutter={[16, 16]}>
               {orgSkills.map(s => (
@@ -190,11 +210,11 @@ const OrganizationDetail: React.FC = () => {
       >
         <Space direction="vertical" size={12} style={{ width: '100%' }}>
           <div>
-            <Text>User ID</Text>
+            <Text style={{ fontSize: 13, color: '#374151', display: 'block', marginBottom: 6 }}>User ID</Text>
             <Input value={newMemberId} onChange={e => setNewMemberId(e.target.value)} placeholder="Enter user ID" />
           </div>
           <div>
-            <Text>Role</Text>
+            <Text style={{ fontSize: 13, color: '#374151', display: 'block', marginBottom: 6 }}>Role</Text>
             <Select
               value={newMemberRole}
               onChange={setNewMemberRole}

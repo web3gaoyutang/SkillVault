@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Typography, Space } from 'antd';
+import { Card, Typography } from 'antd';
 
 const { Text, Title } = Typography;
 
@@ -13,28 +13,34 @@ interface StatsCardProps {
 const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, className }) => {
   return (
     <Card
-      style={{ borderRadius: 12, border: 'none' }}
+      style={{ borderRadius: 12 }}
       bodyStyle={{ padding: 20 }}
       className={className}
     >
-      <Space size={16} align="start">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
-          background: 'rgba(255,255,255,0.7)',
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          background: 'rgba(255,255,255,0.75)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 22,
+          fontSize: 20,
+          flexShrink: 0,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
         }}>
           {icon}
         </div>
         <div>
-          <Text style={{ fontSize: 13, color: '#6B7280' }}>{title}</Text>
-          <Title level={3} style={{ margin: 0, fontWeight: 700 }}>{value}</Title>
+          <Text style={{ fontSize: 12, color: '#64748B', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            {title}
+          </Text>
+          <Title level={3} style={{ margin: '2px 0 0', fontWeight: 700, lineHeight: 1.2 }}>
+            {value}
+          </Title>
         </div>
-      </Space>
+      </div>
     </Card>
   );
 };

@@ -8,44 +8,50 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Card hover effects */
+/* ── Skill card ── */
 .skill-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-top: 3px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border-top: 2px solid transparent !important;
   background: #fff;
+  cursor: pointer;
 }
 
 .skill-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.12);
-  border-top-color: #4F46E5;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.10) !important;
+  border-top-color: #10B981 !important;
 }
 
-/* Stats card gradient backgrounds */
+/* ── Stats cards — soft pastel, no heavy gradient ── */
 .stats-card-purple {
-  background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+  background: #F5F3FF !important;
+  border: 1px solid #EDE9FE !important;
 }
 
 .stats-card-blue {
-  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+  background: #EFF6FF !important;
+  border: 1px solid #DBEAFE !important;
 }
 
 .stats-card-green {
-  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  background: #ECFDF5 !important;
+  border: 1px solid #D1FAE5 !important;
 }
 
 .stats-card-amber {
-  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  background: #FFFBEB !important;
+  border: 1px solid #FEF3C7 !important;
 }
 
-/* Code block styling */
+/* ── Code block ── */
 .code-block {
-  background: #1E1B4B;
-  color: #E0E7FF;
+  background: #0F172A;
+  color: #CBD5E1;
   padding: 16px 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.6;
   position: relative;
   overflow-x: auto;
 }
@@ -54,52 +60,55 @@ body {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #C7D2FE;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94A3B8;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
-  transition: background 0.2s ease;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .code-block .copy-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.16);
+  color: #E2E8F0;
 }
 
-/* Gradient header utility */
+/* ── Info header — replaces dark gradient, now clean light card ── */
 .gradient-header {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-  color: white;
-  padding: 32px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 28px 32px;
   border-radius: 12px;
   margin-bottom: 24px;
 }
 
-/* Status badge styles */
+/* ── Status badges ── */
 .status-badge {
   display: inline-flex;
   align-items: center;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
   line-height: 20px;
+  letter-spacing: 0.01em;
 }
 
 .status-badge-draft {
-  background: #F3F4F6;
-  color: #6B7280;
+  background: #F1F5F9;
+  color: #64748B;
 }
 
 .status-badge-pending_review {
-  background: #DBEAFE;
-  color: #2563EB;
+  background: #EFF6FF;
+  color: #3B82F6;
 }
 
 .status-badge-approved {
-  background: #D1FAE5;
+  background: #ECFDF5;
   color: #059669;
 }
 
@@ -110,25 +119,67 @@ body {
 }
 
 .status-badge-rejected {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: #FFF1F2;
+  color: #E11D48;
 }
 
-/* Auth page gradient background */
+/* ── Auth background — light, airy, minimal ── */
 .auth-bg {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #312E81 0%, #4F46E5 50%, #7C3AED 100%);
+  background: linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 50%, #ECFDF5 100%);
 }
 
-/* Sidebar gradient */
-.sidebar-gradient {
-  background: linear-gradient(180deg, #1E1B4B 0%, #312E81 100%) !important;
+/* ── Sidebar — clean white with border ── */
+.sidebar-light {
+  background: #FFFFFF !important;
+  border-right: 1px solid #E2E8F0 !important;
 }
 
-/* Smooth transitions */
+/* ── Role badges — soft pastel ── */
+.role-badge-owner {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.role-badge-admin {
+  background: #F5F3FF;
+  color: #6D28D9;
+  border: 1px solid #DDD6FE;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.role-badge-developer {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.role-badge-viewer {
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Smooth transitions ── */
 .ant-btn,
 .ant-card,
 .ant-tag,
@@ -136,28 +187,7 @@ body {
   transition: all 0.2s ease;
 }
 
-/* Role badge styles */
-.role-badge-owner {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-  color: white;
-}
-
-.role-badge-admin {
-  background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-  color: white;
-}
-
-.role-badge-developer {
-  background: linear-gradient(135deg, #3B82F6, #2563EB);
-  color: white;
-}
-
-.role-badge-viewer {
-  background: linear-gradient(135deg, #6B7280, #4B5563);
-  color: white;
-}
-
-/* Scrollbar styling */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -167,10 +197,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C7D2FE;
+  background: #CBD5E1;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A5B4FC;
+  background: #94A3B8;
 }

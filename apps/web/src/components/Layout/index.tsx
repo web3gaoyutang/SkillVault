@@ -9,12 +9,19 @@ import {
   UploadOutlined,
   AuditOutlined,
   CheckCircleOutlined,
-  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/auth';
 
-const { Header, Sider, Content } = AntLayout;
+const { Sider, Header, Content } = AntLayout;
 const { Text } = Typography;
+
+// Minimal logo mark — two overlapping squares (vault motif)
+const LogoMark: React.FC = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <rect x="2" y="2" width="16" height="16" rx="4" fill="#6366F1" fillOpacity="0.15" stroke="#6366F1" strokeWidth="1.5"/>
+    <rect x="10" y="10" width="16" height="16" rx="4" fill="#10B981" fillOpacity="0.15" stroke="#10B981" strokeWidth="1.5"/>
+  </svg>
+);
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
@@ -32,66 +39,91 @@ const Layout: React.FC = () => {
   }, [accessToken, user, navigate, fetchUser]);
 
   const menuItems = [
-    { type: 'group' as const, label: 'Main', children: [
-      { key: '/', icon: <AppstoreOutlined />, label: 'Catalog' },
-      { key: '/organizations', icon: <TeamOutlined />, label: 'Organizations' },
-    ]},
-    { type: 'group' as const, label: 'Management', children: [
-      { key: '/skills/new', icon: <UploadOutlined />, label: 'Upload Skill' },
-      { key: '/reviews', icon: <CheckCircleOutlined />, label: 'Review Center' },
-      { key: '/audit-logs', icon: <AuditOutlined />, label: 'Audit Log' },
-    ]},
-    { type: 'group' as const, label: 'Account', children: [
-      { key: '/profile', icon: <UserOutlined />, label: 'Profile' },
-    ]},
+    {
+      type: 'group' as const,
+      label: 'DISCOVER',
+      children: [
+        { key: '/', icon: <AppstoreOutlined />, label: 'Catalog' },
+        { key: '/organizations', icon: <TeamOutlined />, label: 'Organizations' },
+      ],
+    },
+    {
+      type: 'group' as const,
+      label: 'MANAGE',
+      children: [
+        { key: '/skills/new', icon: <UploadOutlined />, label: 'Upload Skill' },
+        { key: '/reviews', icon: <CheckCircleOutlined />, label: 'Review Center' },
+        { key: '/audit-logs', icon: <AuditOutlined />, label: 'Audit Log' },
+      ],
+    },
+    {
+      type: 'group' as const,
+      label: 'ACCOUNT',
+      children: [
+        { key: '/profile', icon: <UserOutlined />, label: 'Profile' },
+      ],
+    },
   ];
 
   const userMenuItems = [
     { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
-    { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', danger: true },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Sign out', danger: true },
   ];
+
+  const avatarLetter = user?.username?.[0]?.toUpperCase() || 'U';
 
   return (
     <AntLayout style={{ minHeight: '100vh' }}>
       <Sider
-        width={240}
+        width={232}
         breakpoint="lg"
         collapsedWidth="0"
-        className="sidebar-gradient"
-        style={{ borderRight: 'none' }}
+        className="sidebar-light"
+        style={{ position: 'fixed', height: '100vh', left: 0, top: 0, bottom: 0, zIndex: 100 }}
       >
+        {/* Logo */}
         <div style={{
-          height: 64,
+          height: 60,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          padding: '0 20px',
+          borderBottom: '1px solid #E2E8F0',
+          gap: 10,
         }}>
-          <Space>
-            <SafetyCertificateOutlined style={{ fontSize: 24, color: '#A5B4FC' }} />
-            <Text style={{ color: '#fff', fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
-              SkillVault
-            </Text>
-          </Space>
+          <LogoMark />
+          <Text style={{ color: '#0F172A', fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            SkillVault
+          </Text>
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-          style={{ background: 'transparent', borderRight: 'none', marginTop: 8 }}
-        />
+
+        {/* Navigation */}
+        <div style={{ padding: '12px 0', overflowY: 'auto', height: 'calc(100vh - 60px)' }}>
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={({ key }) => navigate(key)}
+            style={{
+              background: 'transparent',
+              borderRight: 'none',
+              fontSize: 14,
+            }}
+          />
+        </div>
       </Sider>
-      <AntLayout>
+
+      <AntLayout style={{ marginLeft: 232 }}>
         <Header style={{
           padding: '0 24px',
           background: '#fff',
           display: 'flex',
           justifyContent: 'flex-end',
           alignItems: 'center',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          zIndex: 1,
+          borderBottom: '1px solid #E2E8F0',
+          height: 60,
+          position: 'sticky',
+          top: 0,
+          zIndex: 99,
         }}>
           <Dropdown
             menu={{
@@ -107,20 +139,26 @@ const Layout: React.FC = () => {
             }}
             placement="bottomRight"
           >
-            <Space style={{ cursor: 'pointer' }}>
+            <Space style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: 8, transition: 'background 0.15s' }}
+              className="header-user-trigger">
               <Avatar
+                size={32}
                 style={{
-                  background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                  background: 'linear-gradient(135deg, #6366F1, #A78BFA)',
                   fontWeight: 600,
+                  fontSize: 13,
                 }}
               >
-                {user?.username?.[0]?.toUpperCase() || 'U'}
+                {avatarLetter}
               </Avatar>
-              <Text strong style={{ fontSize: 14 }}>{user?.username || 'User'}</Text>
+              <Text style={{ fontSize: 14, color: '#374151', fontWeight: 500 }}>
+                {user?.username || 'User'}
+              </Text>
             </Space>
           </Dropdown>
         </Header>
-        <Content style={{ margin: 0, padding: 24, background: '#F8FAFC', minHeight: 280 }}>
+
+        <Content style={{ margin: 0, padding: 28, background: '#F8FAFC', minHeight: 'calc(100vh - 60px)' }}>
           <Outlet />
         </Content>
       </AntLayout>
