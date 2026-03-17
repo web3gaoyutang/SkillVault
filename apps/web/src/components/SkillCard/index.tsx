@@ -17,7 +17,7 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill }) => {
     <Card
       className="skill-card"
       hoverable
-      onClick={() => navigate(`/skills/${skill.org_name}/${skill.name}`)}
+      onClick={() => navigate(`/app/skills/${skill.org_name}/${skill.name}`)}
       style={{ height: '100%', borderRadius: 12, border: '1px solid #E2E8F0' }}
       bodyStyle={{ padding: 20 }}
     >
