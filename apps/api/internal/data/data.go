@@ -16,12 +16,27 @@ import (
 	"github.com/skillvault/api/internal/conf"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewSkillRepo, NewOrganizationRepo)
+var ProviderSet = wire.NewSet(
+	NewData,
+	NewUserRepo,
+	NewOrganizationRepo,
+	NewOrgMemberRepo,
+	NewSkillRepo,
+	NewSkillVersionRepo,
+	NewScanResultRepo,
+	NewAPITokenRepo,
+	NewAuditLogRepo,
+	NewCacheRepo,
+	NewObjectStorageRepo,
+	NewScanQueueRepo,
+	NewAuthConfig,
+)
 
 type Data struct {
 	db    *gorm.DB
 	rdb   *redis.Client
 	minio *minio.Client
+	conf  *conf.Data
 }
 
 func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
@@ -58,100 +73,34 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		helper.Warnf("minio connection failed: %v", err)
 	}
 
+	// Ensure MinIO bucket exists
+	if minioClient != nil {
+		ctx := context.Background()
+		exists, err := minioClient.BucketExists(ctx, c.MinIO.Bucket)
+		if err != nil {
+			helper.Warnf("minio bucket check failed: %v", err)
+		} else if !exists {
+			if err := minioClient.MakeBucket(ctx, c.MinIO.Bucket, minio.MakeBucketOptions{}); err != nil {
+				helper.Warnf("minio bucket creation failed: %v", err)
+			} else {
+				helper.Infof("created minio bucket: %s", c.MinIO.Bucket)
+			}
+		}
+	}
+
 	cleanup := func() {
 		helper.Info("closing data resources")
 		_ = sqlDB.Close()
 		_ = rdb.Close()
 	}
 
-	return &Data{db: db, rdb: rdb, minio: minioClient}, cleanup, nil
+	return &Data{db: db, rdb: rdb, minio: minioClient, conf: c}, cleanup, nil
 }
 
-// --- Repository implementations ---
-
-type userRepo struct {
-	data *Data
-	log  *log.Helper
-}
-
-func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
-	return &userRepo{data: data, log: log.NewHelper(logger)}
-}
-
-func (r *userRepo) Create(ctx context.Context, user *biz.User) (*biz.User, error) {
-	// TODO: implement
-	return user, nil
-}
-
-func (r *userRepo) FindByID(ctx context.Context, id uint64) (*biz.User, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.User, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-func (r *userRepo) FindByEmail(ctx context.Context, email string) (*biz.User, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-type skillRepo struct {
-	data *Data
-	log  *log.Helper
-}
-
-func NewSkillRepo(data *Data, logger log.Logger) biz.SkillRepo {
-	return &skillRepo{data: data, log: log.NewHelper(logger)}
-}
-
-func (r *skillRepo) Create(ctx context.Context, skill *biz.Skill) (*biz.Skill, error) {
-	// TODO: implement
-	return skill, nil
-}
-
-func (r *skillRepo) FindByID(ctx context.Context, id uint64) (*biz.Skill, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-func (r *skillRepo) FindByOrgAndName(ctx context.Context, orgID uint64, name string) (*biz.Skill, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-func (r *skillRepo) List(ctx context.Context, query biz.SkillQuery) ([]*biz.Skill, int64, error) {
-	// TODO: implement
-	return nil, 0, nil
-}
-
-type organizationRepo struct {
-	data *Data
-	log  *log.Helper
-}
-
-func NewOrganizationRepo(data *Data, logger log.Logger) biz.OrganizationRepo {
-	return &organizationRepo{data: data, log: log.NewHelper(logger)}
-}
-
-func (r *organizationRepo) Create(ctx context.Context, org *biz.Organization) (*biz.Organization, error) {
-	// TODO: implement
-	return org, nil
-}
-
-func (r *organizationRepo) FindByID(ctx context.Context, id uint64) (*biz.Organization, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-func (r *organizationRepo) FindByName(ctx context.Context, name string) (*biz.Organization, error) {
-	// TODO: implement
-	return nil, nil
-}
-
-func (r *organizationRepo) ListByUser(ctx context.Context, userID uint64) ([]*biz.Organization, error) {
-	// TODO: implement
-	return nil, nil
+func NewAuthConfig(c *conf.Auth) biz.AuthConfig {
+	return biz.AuthConfig{
+		JWTSecret:       c.JWTSecret,
+		AccessTokenTTL:  c.AccessTokenTTL,
+		RefreshTokenTTL: c.RefreshTokenTTL,
+	}
 }

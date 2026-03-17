@@ -1,15 +1,17 @@
 import { create } from 'zustand';
+import { authAPI } from '../api/auth';
 
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  user: { id: number; username: string; email: string } | null;
+  user: { id: number; username: string; email: string; display_name?: string; avatar_url?: string } | null;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: AuthState['user']) => void;
+  fetchUser: () => Promise<void>;
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: localStorage.getItem('access_token'),
   refreshToken: localStorage.getItem('refresh_token'),
   user: null,
@@ -19,6 +21,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ accessToken, refreshToken });
   },
   setUser: (user) => set({ user }),
+  fetchUser: async () => {
+    if (!get().accessToken) return;
+    try {
+      const user = await authAPI.getMe();
+      set({ user: { id: user.id, username: user.username, email: user.email, display_name: user.display_name, avatar_url: user.avatar_url } });
+    } catch {
+      // Token might be expired
+    }
+  },
   logout: () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');

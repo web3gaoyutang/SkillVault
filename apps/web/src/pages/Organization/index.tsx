@@ -1,44 +1,112 @@
 import React from 'react';
-import { Card, List, Button, Typography, Empty, Spin } from 'antd';
-import { PlusOutlined, TeamOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
+import { Card, Row, Col, Button, Typography, Empty, Spin, Modal, Form, Input, message, Space, Tag } from 'antd';
+import { PlusOutlined, TeamOutlined, RightOutlined } from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { organizationAPI } from '../../api/organization';
+import PageHeader from '../../components/PageHeader';
 
-const { Title } = Typography;
+const { Text, Paragraph } = Typography;
 
 const Organization: React.FC = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [form] = Form.useForm();
+
   const { data: orgs, isLoading } = useQuery({
     queryKey: ['organizations'],
     queryFn: () => organizationAPI.list(),
   });
 
+  const createMutation = useMutation({
+    mutationFn: (values: { name: string; display_name: string; description: string }) =>
+      organizationAPI.create(values),
+    onSuccess: () => {
+      message.success('Organization created');
+      setModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+    },
+    onError: (e: Error) => message.error(e.message),
+  });
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-        <Title level={3} style={{ margin: 0 }}>My Organizations</Title>
-        <Button type="primary" icon={<PlusOutlined />}>Create Organization</Button>
-      </div>
+      <PageHeader
+        title="My Organizations"
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}
+            style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', border: 'none' }}>
+            Create Organization
+          </Button>
+        }
+      />
+
       {isLoading ? (
-        <Spin style={{ display: 'block', margin: '100px auto' }} />
+        <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />
       ) : !orgs?.length ? (
-        <Empty description="No organizations yet" />
+        <Empty description="No organizations yet" style={{ margin: '80px 0' }}>
+          <Button type="primary" onClick={() => setModalOpen(true)}>Create your first organization</Button>
+        </Empty>
       ) : (
-        <List
-          grid={{ gutter: 16, xs: 1, sm: 2, lg: 3 }}
-          dataSource={orgs}
-          renderItem={(org) => (
-            <List.Item>
-              <Card>
-                <Card.Meta
-                  avatar={<TeamOutlined style={{ fontSize: 24 }} />}
-                  title={org.display_name || org.name}
-                  description={org.description}
-                />
+        <Row gutter={[16, 16]}>
+          {orgs.map((org) => (
+            <Col xs={24} sm={12} lg={8} key={org.id}>
+              <Card
+                hoverable
+                className="skill-card"
+                onClick={() => navigate(`/organizations/${org.name}`)}
+                style={{ borderRadius: 12 }}
+                bodyStyle={{ padding: 24 }}
+              >
+                <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                  <Space>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10,
+                      background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <TeamOutlined style={{ color: '#fff', fontSize: 18 }} />
+                    </div>
+                    <div>
+                      <Text strong style={{ fontSize: 16 }}>{org.display_name || org.name}</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>@{org.name}</Text>
+                    </div>
+                  </Space>
+                  <Paragraph ellipsis={{ rows: 2 }} style={{ color: '#6B7280', margin: 0 }}>
+                    {org.description || 'No description'}
+                  </Paragraph>
+                  <div style={{ textAlign: 'right' }}>
+                    <RightOutlined style={{ color: '#9CA3AF' }} />
+                  </div>
+                </Space>
               </Card>
-            </List.Item>
-          )}
-        />
+            </Col>
+          ))}
+        </Row>
       )}
+
+      <Modal
+        title="Create Organization"
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={() => form.submit()}
+        confirmLoading={createMutation.isPending}
+      >
+        <Form form={form} layout="vertical" onFinish={(v) => createMutation.mutate(v)}>
+          <Form.Item name="name" label="Name" rules={[{ required: true, pattern: /^[a-z0-9-]+$/, message: 'Lowercase letters, numbers, and hyphens only' }]}>
+            <Input placeholder="my-org" />
+          </Form.Item>
+          <Form.Item name="display_name" label="Display Name">
+            <Input placeholder="My Organization" />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea rows={3} placeholder="Organization description" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

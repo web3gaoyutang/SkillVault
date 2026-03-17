@@ -18,13 +18,24 @@ client.interceptors.request.use((config) => {
 });
 
 client.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // Unwrap {code, message, data} envelope
+    const body = response.data;
+    if (body && typeof body === 'object' && 'code' in body && 'data' in body) {
+      if (body.code !== 0) {
+        return Promise.reject(new Error(body.message || 'Request failed'));
+      }
+      return body.data;
+    }
+    return body;
+  },
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+    const msg = error.response?.data?.message || error.message;
+    return Promise.reject(new Error(msg));
   },
 );
 

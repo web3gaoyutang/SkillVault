@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConfigProvider } from 'antd';
 import App from './App';
+import './styles/global.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +22,22 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <ConfigProvider
           theme={{
             token: {
-              colorPrimary: '#1677ff',
+              colorPrimary: '#4F46E5',
+              borderRadius: 8,
+              colorBgLayout: '#F8FAFC',
+              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+            },
+            components: {
+              Card: {
+                borderRadiusLG: 12,
+              },
+              Button: {
+                borderRadius: 8,
+              },
+              Menu: {
+                darkItemBg: 'transparent',
+                darkSubMenuItemBg: 'transparent',
+              },
             },
           }}
         >

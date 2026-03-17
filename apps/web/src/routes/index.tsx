@@ -7,7 +7,11 @@ const Register = lazy(() => import('../pages/Register'));
 const Catalog = lazy(() => import('../pages/Catalog'));
 const SkillDetail = lazy(() => import('../pages/SkillDetail'));
 const Organization = lazy(() => import('../pages/Organization'));
+const OrganizationDetail = lazy(() => import('../pages/OrganizationDetail'));
 const Profile = lazy(() => import('../pages/Profile'));
+const SkillUpload = lazy(() => import('../pages/SkillUpload'));
+const ReviewCenter = lazy(() => import('../pages/ReviewCenter'));
+const AuditLog = lazy(() => import('../pages/AuditLog'));
 
 export const routes: RouteObject[] = [
   {
@@ -27,12 +31,32 @@ export const routes: RouteObject[] = [
         element: <Catalog />,
       },
       {
+        path: 'skills/new',
+        element: <SkillUpload />,
+      },
+      {
         path: 'skills/:org/:name',
         element: <SkillDetail />,
       },
       {
+        path: 'skills/:org/:name/versions/new',
+        element: <SkillUpload />,
+      },
+      {
         path: 'organizations',
         element: <Organization />,
+      },
+      {
+        path: 'organizations/:org',
+        element: <OrganizationDetail />,
+      },
+      {
+        path: 'reviews',
+        element: <ReviewCenter />,
+      },
+      {
+        path: 'audit-logs',
+        element: <AuditLog />,
       },
       {
         path: 'profile',

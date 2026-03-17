@@ -1,19 +1,14 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Descriptions, Tag, Table, Badge, Spin } from 'antd';
+import { Typography, Tag, Table, Spin, Tabs, Card, Space, Button, message } from 'antd';
+import { CopyOutlined, DownloadOutlined, CloudOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { skillAPI } from '../../api/skill';
 import { versionAPI } from '../../api/version';
+import PageHeader from '../../components/PageHeader';
+import StatusBadge from '../../components/StatusBadge';
 
-const { Title } = Typography;
-
-const statusColors: Record<string, string> = {
-  draft: 'default',
-  pending_review: 'processing',
-  approved: 'success',
-  published: 'green',
-  rejected: 'error',
-};
+const { Text, Paragraph } = Typography;
 
 const SkillDetail: React.FC = () => {
   const { org, name } = useParams<{ org: string; name: string }>();
@@ -30,45 +25,106 @@ const SkillDetail: React.FC = () => {
     enabled: !!org && !!name,
   });
 
+  const copyInstallCommand = () => {
+    navigator.clipboard.writeText(`skillvault install ${org}/${name}`);
+    message.success('Copied to clipboard');
+  };
+
   if (skillLoading) {
     return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
   }
 
   return (
     <div>
-      <Title level={3}>{skill?.display_name || skill?.name}</Title>
-      <Descriptions bordered column={2} style={{ marginBottom: 24 }}>
-        <Descriptions.Item label="Organization">{skill?.org_name}</Descriptions.Item>
-        <Descriptions.Item label="Name">{skill?.name}</Descriptions.Item>
-        <Descriptions.Item label="Visibility"><Tag>{skill?.visibility}</Tag></Descriptions.Item>
-        <Descriptions.Item label="Latest Version">{skill?.latest_version || '-'}</Descriptions.Item>
-        <Descriptions.Item label="Downloads">{skill?.download_count}</Descriptions.Item>
-        <Descriptions.Item label="Runtimes">
-          {skill?.runtimes?.map((r) => <Tag key={r}>{r}</Tag>)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Description" span={2}>{skill?.description}</Descriptions.Item>
-      </Descriptions>
-
-      <Title level={4}>Install</Title>
-      <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8 }}>
-        skillvault install {org}/{name}
-      </pre>
-
-      <Title level={4}>Versions</Title>
-      <Table
-        dataSource={versions || []}
-        rowKey="id"
-        columns={[
-          { title: 'Version', dataIndex: 'version' },
-          {
-            title: 'Status',
-            dataIndex: 'status',
-            render: (status: string) => <Badge status={statusColors[status] as any} text={status} />,
-          },
-          { title: 'Size', dataIndex: 'artifact_size', render: (v: number) => v ? `${(v / 1024).toFixed(1)} KB` : '-' },
-          { title: 'Published', dataIndex: 'published_at', render: (v: string) => v || '-' },
+      <PageHeader
+        title={skill?.display_name || skill?.name || ''}
+        breadcrumbs={[
+          { label: 'Catalog', path: '/' },
+          { label: `${org}/${name}` },
         ]}
-        pagination={false}
+      />
+
+      {/* Hero section */}
+      <div className="gradient-header">
+        <Space direction="vertical" size={8}>
+          <Space>
+            <CloudOutlined style={{ fontSize: 20 }} />
+            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>
+              {org}/{name}
+            </Text>
+          </Space>
+          <Paragraph style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, margin: 0, maxWidth: 600 }}>
+            {skill?.description || 'No description provided'}
+          </Paragraph>
+          <Space style={{ marginTop: 8 }}>
+            {skill?.tags?.map((t) => (
+              <Tag key={t} style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none', borderRadius: 12 }}>
+                {t}
+              </Tag>
+            ))}
+          </Space>
+          <Space style={{ marginTop: 8 }}>
+            <Tag color="blue">{skill?.visibility}</Tag>
+            {skill?.latest_version && <Tag color="green">v{skill.latest_version}</Tag>}
+            <Space size={4}>
+              <DownloadOutlined style={{ color: 'rgba(255,255,255,0.7)' }} />
+              <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{skill?.download_count || 0} downloads</Text>
+            </Space>
+          </Space>
+        </Space>
+      </div>
+
+      <Tabs
+        items={[
+          {
+            key: 'overview',
+            label: 'Overview',
+            children: (
+              <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                <Card title="Install" style={{ borderRadius: 12 }}>
+                  <div className="code-block">
+                    <code>skillvault install {org}/{name}</code>
+                    <button className="copy-btn" onClick={copyInstallCommand}>
+                      <CopyOutlined /> Copy
+                    </button>
+                  </div>
+                </Card>
+                <Card title="Details" style={{ borderRadius: 12 }}>
+                  <Space direction="vertical" size={8}>
+                    <div><Text strong>Runtimes: </Text>{skill?.runtimes?.map(r => <Tag key={r}>{r}</Tag>)}</div>
+                    <div><Text strong>Visibility: </Text><Tag>{skill?.visibility}</Tag></div>
+                    <div><Text strong>Latest Version: </Text><Text>{skill?.latest_version || 'None'}</Text></div>
+                  </Space>
+                </Card>
+              </Space>
+            ),
+          },
+          {
+            key: 'versions',
+            label: `Versions (${versions?.length || 0})`,
+            children: (
+              <Card style={{ borderRadius: 12 }}>
+                <Table
+                  dataSource={versions || []}
+                  rowKey="id"
+                  pagination={false}
+                  columns={[
+                    { title: 'Version', dataIndex: 'version', render: (v: string) => <Text strong>v{v}</Text> },
+                    {
+                      title: 'Status',
+                      dataIndex: 'status',
+                      render: (status: string) => <StatusBadge status={status} />,
+                    },
+                    { title: 'Size', dataIndex: 'artifact_size', render: (v: number) => v ? `${(v / 1024).toFixed(1)} KB` : '-' },
+                    { title: 'Changelog', dataIndex: 'changelog', ellipsis: true },
+                    { title: 'Created', dataIndex: 'created_at', render: (v: string) => v ? new Date(v).toLocaleDateString() : '-' },
+                    { title: 'Published', dataIndex: 'published_at', render: (v: string) => v ? new Date(v).toLocaleDateString() : '-' },
+                  ]}
+                />
+              </Card>
+            ),
+          },
+        ]}
       />
     </div>
   );

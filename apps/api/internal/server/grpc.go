@@ -4,14 +4,15 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 
+	"github.com/skillvault/api/internal/biz"
 	"github.com/skillvault/api/internal/conf"
 	"github.com/skillvault/api/internal/middleware"
 )
 
-func NewGRPCServer(c *conf.Server, auth *conf.Auth, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, auth *conf.Auth, tokenRepo biz.APITokenRepo, logger log.Logger) *grpc.Server {
 	opts := []grpc.ServerOption{
 		grpc.Middleware(
-			middleware.Auth(auth),
+			middleware.Auth(auth, tokenRepo),
 		),
 	}
 	if c.GRPC.Addr != "" {
