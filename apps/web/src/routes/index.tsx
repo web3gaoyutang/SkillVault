@@ -2,6 +2,7 @@ import React, { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import Layout from '../components/Layout';
 
+const Landing = lazy(() => import('../pages/Landing'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const Catalog = lazy(() => import('../pages/Catalog'));
@@ -14,6 +15,11 @@ const ReviewCenter = lazy(() => import('../pages/ReviewCenter'));
 const AuditLog = lazy(() => import('../pages/AuditLog'));
 
 export const routes: RouteObject[] = [
+  // ── Public routes ──────────────────────────────────────────────
+  {
+    path: '/',
+    element: <Landing />,
+  },
   {
     path: '/login',
     element: <Login />,
@@ -22,8 +28,10 @@ export const routes: RouteObject[] = [
     path: '/register',
     element: <Register />,
   },
+
+  // ── Authenticated app (all under /app) ─────────────────────────
   {
-    path: '/',
+    path: '/app',
     element: <Layout />,
     children: [
       {

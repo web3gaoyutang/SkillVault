@@ -129,7 +129,7 @@ const OrganizationDetail: React.FC = () => {
       <PageHeader
         title={orgData?.display_name || orgData?.name || ''}
         breadcrumbs={[
-          { label: 'Organizations', path: '/organizations' },
+          { label: 'Organizations', path: '/app/organizations' },
           { label: org || '' },
         ]}
       />

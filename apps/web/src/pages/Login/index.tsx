@@ -24,7 +24,7 @@ const Login: React.FC = () => {
     try {
       const res = await authAPI.login(values);
       setTokens(res.access_token, res.refresh_token);
-      navigate('/');
+      navigate('/app');
     } catch {
       message.error('Login failed. Please check your credentials.');
     }

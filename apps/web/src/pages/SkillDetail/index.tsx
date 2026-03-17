@@ -39,7 +39,7 @@ const SkillDetail: React.FC = () => {
       <PageHeader
         title={skill?.display_name || skill?.name || ''}
         breadcrumbs={[
-          { label: 'Catalog', path: '/' },
+          { label: 'Catalog', path: '/app' },
           { label: `${org}/${name}` },
         ]}
       />

@@ -73,8 +73,8 @@ const SkillUpload: React.FC = () => {
       <PageHeader
         title={isNewVersion ? 'Upload New Version' : 'Upload Skill'}
         breadcrumbs={isNewVersion
-          ? [{ label: 'Catalog', path: '/' }, { label: `${existingOrg}/${existingName}`, path: `/skills/${existingOrg}/${existingName}` }, { label: 'New Version' }]
-          : [{ label: 'Catalog', path: '/' }, { label: 'Upload Skill' }]
+          ? [{ label: 'Catalog', path: '/app' }, { label: `${existingOrg}/${existingName}`, path: `/app/skills/${existingOrg}/${existingName}` }, { label: 'New Version' }]
+          : [{ label: 'Catalog', path: '/app' }, { label: 'Upload Skill' }]
         }
       />
 
@@ -172,10 +172,10 @@ const SkillUpload: React.FC = () => {
             title={isNewVersion ? 'Version uploaded!' : 'Skill created!'}
             subTitle="Your artifact has been uploaded and a security scan has been queued."
             extra={[
-              <Button type="primary" key="view" onClick={() => navigate(`/skills/${createdSkill?.org}/${createdSkill?.name}`)}>
+              <Button type="primary" key="view" onClick={() => navigate(`/app/skills/${createdSkill?.org}/${createdSkill?.name}`)}>
                 View Skill
               </Button>,
-              <Button key="catalog" onClick={() => navigate('/')}>
+              <Button key="catalog" onClick={() => navigate('/app')}>
                 Back to Catalog
               </Button>,
             ]}

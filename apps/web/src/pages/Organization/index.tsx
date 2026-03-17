@@ -55,7 +55,7 @@ const Organization: React.FC = () => {
               <Card
                 hoverable
                 className="skill-card"
-                onClick={() => navigate(`/organizations/${org.name}`)}
+                onClick={() => navigate(`/app/organizations/${org.name}`)}
                 style={{ borderRadius: 12, border: '1px solid #E2E8F0' }}
                 bodyStyle={{ padding: 24 }}
               >
