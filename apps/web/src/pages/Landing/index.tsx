@@ -179,6 +179,139 @@ const Navbar: React.FC = () => {
   );
 };
 
+// ── Animated Terminal ──────────────────────────────────────────────────────
+const TERMINAL_SCRIPT = [
+  {
+    cmd: 'skillvault login --server https://vault.example.com',
+    output: [
+      { text: '✓ Authenticated as @alice', color: '#10B981' },
+    ],
+  },
+  {
+    cmd: 'skillvault search "database migration"',
+    output: [
+      { text: 'Found 3 skills matching "database migration"', color: '#94A3B8' },
+      { text: '  acme/db-migrate      v2.1.0  ↓ 1.2k', color: '#94A3B8' },
+      { text: '  infra/pg-runner      v1.0.3  ↓ 847', color: '#94A3B8' },
+    ],
+  },
+  {
+    cmd: 'skillvault install acme/db-migrate',
+    output: [
+      { text: '✓ Installed acme/db-migrate@2.1.0', color: '#10B981' },
+    ],
+  },
+];
+
+type TerminalLine = { prompt?: boolean; text: string; color: string };
+
+const TerminalAnimation: React.FC = () => {
+  const [lines, setLines] = React.useState<TerminalLine[]>([]);
+  const [typing, setTyping] = React.useState('');
+
+  const s = React.useRef({
+    lines: [] as TerminalLine[],
+    cmdIdx: 0,
+    charIdx: 0,
+    outIdx: 0,
+    phase: 'typing' as 'typing' | 'pause' | 'output' | 'wait-next' | 'wait-restart',
+    timer: undefined as ReturnType<typeof setTimeout> | undefined,
+  });
+
+  React.useEffect(() => {
+    const r = s.current;
+
+    const schedule = (fn: () => void, delay: number) => {
+      r.timer = setTimeout(fn, delay);
+    };
+
+    const tick = () => {
+      const script = TERMINAL_SCRIPT[r.cmdIdx];
+
+      if (r.phase === 'typing') {
+        r.charIdx++;
+        setTyping(script.cmd.slice(0, r.charIdx));
+        if (r.charIdx >= script.cmd.length) {
+          r.phase = 'pause';
+          schedule(tick, 700);
+        } else {
+          // slight random variance for natural feel
+          schedule(tick, 36 + Math.random() * 30);
+        }
+      } else if (r.phase === 'pause') {
+        r.lines = [...r.lines, { prompt: true, text: script.cmd, color: '#CBD5E1' }];
+        setLines([...r.lines]);
+        setTyping('');
+        r.outIdx = 0;
+        r.phase = 'output';
+        schedule(tick, 220);
+      } else if (r.phase === 'output') {
+        if (r.outIdx < script.output.length) {
+          const out = script.output[r.outIdx];
+          r.lines = [...r.lines, { text: out.text, color: out.color }];
+          setLines([...r.lines]);
+          r.outIdx++;
+          schedule(tick, 170);
+        } else {
+          r.cmdIdx++;
+          if (r.cmdIdx < TERMINAL_SCRIPT.length) {
+            r.phase = 'wait-next';
+            schedule(tick, 520);
+          } else {
+            r.phase = 'wait-restart';
+            schedule(tick, 3200);
+          }
+        }
+      } else if (r.phase === 'wait-next') {
+        r.charIdx = 0;
+        r.phase = 'typing';
+        schedule(tick, 0);
+      } else if (r.phase === 'wait-restart') {
+        r.cmdIdx = 0;
+        r.charIdx = 0;
+        r.phase = 'typing';
+        r.lines = [];
+        setLines([]);
+        setTyping('');
+        schedule(tick, 400);
+      }
+    };
+
+    schedule(tick, 700);
+    return () => { if (r.timer !== undefined) clearTimeout(r.timer); };
+  }, []);
+
+  return (
+    <div style={{
+      padding: '20px 24px',
+      fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace",
+      fontSize: 13,
+      lineHeight: 1.75,
+      minHeight: 210,
+    }}>
+      {lines.map((line, i) => (
+        <div key={i}>
+          {line.prompt && <span style={{ color: '#10B981', userSelect: 'none' }}>$ </span>}
+          <span style={{ color: line.color }}>{line.text}</span>
+        </div>
+      ))}
+      {/* Active input line with blinking cursor */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ color: '#10B981', userSelect: 'none' }}>$ </span>
+        <span style={{ color: '#CBD5E1' }}>{typing}</span>
+        <span style={{
+          display: 'inline-block',
+          width: 2,
+          height: 14,
+          background: '#94A3B8',
+          marginLeft: 1,
+          animation: 'termBlink 1.1s step-end infinite',
+        }} />
+      </div>
+    </div>
+  );
+};
+
 // ── Hero ───────────────────────────────────────────────────────────────────
 const Hero: React.FC = () => {
   const navigate = useNavigate();
@@ -294,37 +427,13 @@ const Hero: React.FC = () => {
                 terminal
               </span>
             </div>
-            {/* Code content */}
-            <div style={{ padding: '20px 24px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace", fontSize: 13, lineHeight: 1.75 }}>
-              {[
-                { prompt: '$ ', cmd: 'skillvault login --server https://vault.example.com', color: '#CBD5E1' },
-                { prompt: '', cmd: '✓ Authenticated as @alice', color: C.mint },
-                { prompt: '$ ', cmd: 'skillvault search "database migration"', color: '#CBD5E1' },
-                { prompt: '', cmd: 'Found 3 skills matching "database migration"', color: '#94A3B8' },
-                { prompt: '', cmd: '  acme/db-migrate      v2.1.0  ↓ 1.2k', color: '#94A3B8' },
-                { prompt: '', cmd: '  infra/pg-runner      v1.0.3  ↓ 847', color: '#94A3B8' },
-                { prompt: '$ ', cmd: 'skillvault install acme/db-migrate', color: '#CBD5E1' },
-                { prompt: '', cmd: '✓ Installed acme/db-migrate@2.1.0', color: C.mint },
-              ].map((line, i) => (
-                <div key={i}>
-                  {line.prompt && <span style={{ color: C.mint, userSelect: 'none' }}>{line.prompt}</span>}
-                  <span style={{ color: line.color }}>{line.cmd}</span>
-                </div>
-              ))}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 4 }}>
-                <span style={{ color: C.mint }}>$ </span>
-                <span style={{
-                  display: 'inline-block', width: 8, height: 15,
-                  background: C.primary, opacity: 0.8,
-                  animation: 'blink 1.1s step-end infinite',
-                }} />
-              </div>
-            </div>
+            {/* Animated terminal content */}
+            <TerminalAnimation />
           </div>
         </div>
       </Section>
       <style>{`
-        @keyframes blink { 0%,100%{opacity:0.8} 50%{opacity:0} }
+        @keyframes termBlink { 0%,100%{opacity:1} 50%{opacity:0} }
       `}</style>
     </div>
   );
