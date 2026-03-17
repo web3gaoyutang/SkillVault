@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/auth';
+import { isMockEnabled, installMockInterceptor, installFetchMock } from '../mock/handlers';
 
 const client = axios.create({
   baseURL: '/api/v1',
@@ -8,6 +9,16 @@ const client = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Enable mock mode when VITE_MOCK=true or localStorage.mock=true
+if (isMockEnabled()) {
+  installMockInterceptor(client);
+  installFetchMock();
+  console.log(
+    '%c[SkillVault] Mock mode enabled — API calls return mock data',
+    'color: #7C3AED; font-weight: bold;',
+  );
+}
 
 client.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
