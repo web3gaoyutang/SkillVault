@@ -1,0 +1,53 @@
+syntax = "proto3";
+package auth.v1;
+
+option go_package = "github.com/skillvault/api/api/auth/v1;authv1";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterReply);
+  rpc Login(LoginRequest) returns (LoginReply);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenReply);
+  rpc Logout(LogoutRequest) returns (LogoutReply);
+  rpc GetMe(GetMeRequest) returns (GetMeReply);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+message RegisterReply {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+message LoginReply {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+message RefreshTokenReply {
+  string access_token = 1;
+  int64 expires_in = 2;
+}
+
+message LogoutRequest {}
+message LogoutReply {}
+
+message GetMeRequest {}
+message GetMeReply {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+  string display_name = 4;
+  string avatar_url = 5;
+}

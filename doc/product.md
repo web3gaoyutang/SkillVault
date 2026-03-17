@@ -98,6 +98,10 @@ skillvault install acme/release-helper --target claude --scope project
 - 明确安装目标路径
 - 按策略阻断安装
 
+**风险分级约定：**
+- `error`：阻断发布/安装（如路径穿越、可执行文件、包大小超限）
+- `warning`：允许继续，但需在 UI/CLI 明确提示风险
+
 ### 5.5 治理与审计
 
 支持版本管理、审核状态、角色权限和审计日志。
@@ -105,6 +109,12 @@ skillvault install acme/release-helper --target claude --scope project
 - **版本状态机**：draft → pending_review → approved → published / rejected
 - **角色权限**：owner / admin / developer / viewer
 - **审计日志**：记录所有关键操作（上传、审核、发布、安装、删除）
+
+**状态流转最小规则：**
+- 上传完成且通过基础校验后，版本进入 `pending_review`
+- 审核通过进入 `approved`，再由发布动作进入 `published`
+- 审核拒绝进入 `rejected`，修复后可回到 `draft` 重新送审
+- 当组织策略开启自动发布且扫描结果无阻断项时，可直接发布
 
 ### 5.6 Runtime 适配层
 
@@ -130,17 +140,21 @@ SkillVault 存储制品 + 创建版本记录
 校验器检查结构、元数据、兼容性
         │
         ▼
-扫描器标记可疑脚本和高风险模式
+扫描器执行分级策略（error/warning）
         │
         ▼
     ┌───┴───┐
     │       │
- 自动发布  进入审核
+策略允许自动发布  进入审核
     │       │
     ▼       ▼
   published  pending_review → approved → published
                            → rejected
 ```
+
+说明：
+- 存在 `error` 级风险时，发布会被阻断，不进入自动发布分支
+- 仅在组织策略启用自动发布且扫描无阻断项时，才允许直接发布
 
 ### 6.2 安装流程
 
@@ -316,3 +330,19 @@ skillvault verify acme/release-helper
 | 安装成功率 | 安装操作成功/失败比 |
 | 安全拦截率 | 被安全扫描阻断的上传比例 |
 | 平均安装耗时 | 从执行 install 到安装完成的耗时 |
+
+指标口径建议：
+- 统计周期默认按月（自然月）
+- 由 API 审计日志与安装事件日志共同计算
+- MVP 阶段建议目标：安装成功率 ≥ 95%，平均安装耗时 P95 < 30s
+
+---
+
+## 12. 术语与口径
+
+| 术语 | 定义 |
+|------|------|
+| Runtime | Skill 的目标执行环境（如 OpenClaw、Claude Code） |
+| Scope | 安装范围，`user` 表示用户级，`project` 表示项目级 |
+| Visibility | Skill 可见性：`private`（组织内）、`internal`（内部网络）、`public`（公开） |
+| Canonical Package Model | SkillVault 内部统一包模型，安装时按 Runtime 适配 |

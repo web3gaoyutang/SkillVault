@@ -1,0 +1,44 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Go
+*.o
+*.a
+*.test
+vendor/
+
+# Node
+node_modules/
+apps/web/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Docker volumes
+mysql_data/
+redis_data/
+minio_data/
+
+# Temporary
+tmp/
+*.log
+
+# claude
+.claude/

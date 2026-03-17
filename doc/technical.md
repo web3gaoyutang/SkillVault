@@ -6,7 +6,7 @@
 
 | 层级 | 技术选型 | 说明 |
 |------|---------|------|
-| 前端 | React + TypeScript | SPA，配合 Ant Design / Material UI 组件库 |
+| 前端 | React + TypeScript | SPA，统一使用 Ant Design 5 组件库 |
 | 后端 | Go + Kratos v2 | 微服务框架，支持 gRPC + HTTP 双协议 |
 | 数据库 | MySQL 8.0 | 主存储，关系型数据 |
 | 缓存 | Redis 7.x | 缓存、会话管理、异步任务队列 |
@@ -127,16 +127,20 @@ apps/api/
 ### 4.1 ER 关系概览
 
 ```
-User ──┬── belongs_to ──> Organization
-       │
-       └── creates ──> Skill ──> SkillVersion ──> Artifact
-                                      │
-                                      └── ScanResult
-
-Organization ──> OrgMember (User + Role)
+User ──< OrgMember >── Organization
+  │          │
+  │          └── role (owner/admin/developer/viewer)
+  │
+  └── creates ──> Skill ──> SkillVersion ──> Artifact
+                                │
+                                └── ScanResult
 
 所有关键操作 ──> AuditLog
 ```
+
+说明：
+- `User` 与 `Organization` 是多对多关系，通过 `org_members` 关联
+- `organizations.created_by` 表示组织创建者，不等同于成员关系本身
 
 ### 4.2 表结构
 
@@ -303,6 +307,13 @@ CREATE TABLE `audit_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
+### 4.3 约束与一致性策略
+
+- MVP 阶段默认不强依赖数据库外键约束，主要通过应用层事务与唯一索引保障一致性
+- 涉及多表写入（如发布版本、成员变更）必须在单事务内完成
+- 对高并发写场景使用唯一索引 + 幂等校验，避免重复创建
+- 定期执行数据巡检任务（孤儿版本、孤儿扫描记录）并写入审计日志
+
 ---
 
 ## 5. Redis 使用方案
@@ -351,6 +362,21 @@ Consumer:  BRPOPLPUSH queue:scan queue:scan:processing
 |---------|------|-----|
 | `lock:skill:{org}:{name}` | Skill 创建防重复 | 10s |
 | `lock:version:{skill_id}:{version}` | 版本发布防并发 | 30s |
+
+### 5.5 缓存失效矩阵
+
+| 写操作 | 需要失效的 Key |
+|------|---------------|
+| 更新用户信息 | `user:{id}` |
+| 更新组织信息 | `org:{id}` |
+| 组织成员变更 | `org:{id}:members` |
+| 更新 Skill 元数据 | `skill:{id}`, `skill:list:{hash}`（按前缀批量失效） |
+| 发布新版本 | `skill:{id}`, `skill:list:{hash}`, `version:{id}:scan` |
+| 重扫版本 | `version:{id}:scan` |
+
+实践建议：
+- 优先“先写数据库，再删除缓存”策略，避免脏写回填
+- 列表缓存采用短 TTL + 主动失效组合，平衡一致性与性能
 
 ---
 
@@ -445,6 +471,21 @@ Authorization: Bearer <api_token>
     "data": { }
 }
 ```
+
+### 6.9 API 语义与错误码约定
+
+- 路径参数 `{org}` 表示组织 namespace（`organizations.name`），不是数值 ID
+- 路径参数 `{name}` 表示 Skill 标识名（`skills.name`）
+- `POST /api/v1/skills/{org}/{name}/versions/{version}/publish` 需要幂等：重复请求返回成功且不重复发布
+- `POST /api/v1/skills/{org}/{name}/versions/{version}/review` 需要记录审核人、审核意见、审核时间
+
+常见 HTTP 状态码语义：
+- `400` 参数错误（版本号非法、分页参数非法）
+- `401` 未认证（Token 缺失、过期或签名无效）
+- `403` 已认证但无权限（角色不满足）
+- `404` 资源不存在（组织/Skill/版本不存在）
+- `409` 状态冲突（例如对已发布版本再次执行拒绝审核）
+- `429` 触发限流（登录/API 频控）
 
 **分页参数：**
 
@@ -586,7 +627,7 @@ Scan Worker BRPOPLPUSH 获取任务
 |------|------|------|
 | 结构 | manifest.yaml 缺失 | error |
 | 结构 | 必要字段缺失（name/version/runtime） | error |
-| 安全 | 包含可执行文件（.exe/.sh/.bat） | warning |
+| 安全 | 包含可执行文件（.exe/.sh/.bat） | error |
 | 安全 | 路径穿越（../ 模式） | error |
 | 安全 | 脚本中包含 curl/wget/eval 等高危操作 | warning |
 | 安全 | 包大小超限（默认 50MB） | error |
@@ -666,6 +707,20 @@ Refresh Token 过期 → 重新登录
 | admin | 管理成员、审核 Skill、管理组织设置 |
 | developer | 上传 Skill、创建版本、查看 |
 | viewer | 只读访问 |
+
+### 10.3 版本状态流转规则
+
+| From | To | Actor | 条件 |
+|------|----|-------|------|
+| draft | pending_review | developer/admin | 上传完成且基础校验通过 |
+| pending_review | approved | admin/owner | 扫描结果无阻断项，审核通过 |
+| pending_review | rejected | admin/owner | 审核拒绝并填写原因 |
+| approved | published | admin/owner/system | 发布动作成功，制品可下载 |
+| rejected | draft | developer | 重新提交修复后再次送审 |
+
+说明：
+- 当组织策略开启“自动发布”且扫描结果全量通过时，可由 `draft` 直接进入 `published`
+- 任意状态变更都需要写入 `audit_logs`
 
 **API 鉴权中间件（Kratos Middleware）：**
 
@@ -810,6 +865,14 @@ volumes:
 | MySQL | 3306 | 数据库 |
 | Redis | 6379 | 缓存 |
 | MinIO | 9000 / 9001 | 对象存储 / 控制台 |
+
+### 12.3 生产环境最小基线
+
+- 所有密钥（JWT、数据库、对象存储）通过环境变量或密钥管理系统注入，禁止硬编码
+- MySQL 开启定时备份与恢复演练，至少保留最近 7 天全量备份
+- MinIO 开启版本化与生命周期策略，防止误删制品不可恢复
+- API 与 Worker 配置健康检查与重启策略（如 Kubernetes liveness/readiness）
+- 关键审计日志至少保留 180 天，并支持导出归档
 
 ---
 

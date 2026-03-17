@@ -1,0 +1,49 @@
+syntax = "proto3";
+package organization.v1;
+
+option go_package = "github.com/skillvault/api/api/organization/v1;orgv1";
+
+service OrganizationService {
+  rpc CreateOrganization(CreateOrganizationRequest) returns (CreateOrganizationReply);
+  rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationReply);
+  rpc ListOrganizations(ListOrganizationsRequest) returns (ListOrganizationsReply);
+  rpc UpdateOrganization(UpdateOrganizationRequest) returns (UpdateOrganizationReply);
+  rpc DeleteOrganization(DeleteOrganizationRequest) returns (DeleteOrganizationReply);
+}
+
+message CreateOrganizationRequest {
+  string name = 1;
+  string display_name = 2;
+  string description = 3;
+}
+message CreateOrganizationReply {
+  uint64 id = 1;
+}
+
+message GetOrganizationRequest {
+  string name = 1;
+}
+message GetOrganizationReply {
+  uint64 id = 1;
+  string name = 2;
+  string display_name = 3;
+  string description = 4;
+  string avatar_url = 5;
+}
+
+message ListOrganizationsRequest {}
+message ListOrganizationsReply {
+  repeated GetOrganizationReply items = 1;
+}
+
+message UpdateOrganizationRequest {
+  string name = 1;
+  string display_name = 2;
+  string description = 3;
+}
+message UpdateOrganizationReply {}
+
+message DeleteOrganizationRequest {
+  string name = 1;
+}
+message DeleteOrganizationReply {}

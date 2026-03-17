@@ -1,0 +1,37 @@
+server:
+  http:
+    addr: 0.0.0.0:8080
+    timeout: 5s
+  grpc:
+    addr: 0.0.0.0:9090
+    timeout: 5s
+
+data:
+  database:
+    driver: mysql
+    source: "root:rootpassword@tcp(127.0.0.1:3306)/skillvault?charset=utf8mb4&parseTime=True&loc=Local"
+    max_open_conns: 100
+    max_idle_conns: 10
+    conn_max_lifetime: 3600s
+  redis:
+    addr: 127.0.0.1:6379
+    password: ""
+    db: 0
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+  minio:
+    endpoint: 127.0.0.1:9000
+    access_key: minioadmin
+    secret_key: minioadmin
+    bucket: skillvault-artifacts
+    use_ssl: false
+
+auth:
+  jwt_secret: "change-me-in-production"
+  access_token_ttl: 2h
+  refresh_token_ttl: 168h
+
+scan:
+  max_package_size: 52428800
+  max_file_count: 500
+  sandbox_dir: /tmp/skillvault-scan

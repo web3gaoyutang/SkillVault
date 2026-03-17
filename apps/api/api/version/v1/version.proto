@@ -1,0 +1,62 @@
+syntax = "proto3";
+package version.v1;
+
+option go_package = "github.com/skillvault/api/api/version/v1;versionv1";
+
+service VersionService {
+  rpc CreateVersion(CreateVersionRequest) returns (CreateVersionReply);
+  rpc GetVersion(GetVersionRequest) returns (GetVersionReply);
+  rpc ListVersions(ListVersionsRequest) returns (ListVersionsReply);
+  rpc ReviewVersion(ReviewVersionRequest) returns (ReviewVersionReply);
+  rpc PublishVersion(PublishVersionRequest) returns (PublishVersionReply);
+}
+
+message CreateVersionRequest {
+  string org_name = 1;
+  string skill_name = 2;
+  string version = 3;
+  string changelog = 4;
+}
+message CreateVersionReply {
+  uint64 id = 1;
+}
+
+message GetVersionRequest {
+  string org_name = 1;
+  string skill_name = 2;
+  string version = 3;
+}
+message GetVersionReply {
+  uint64 id = 1;
+  string version = 2;
+  string status = 3;
+  string changelog = 4;
+  uint64 artifact_size = 5;
+  string checksum_sha256 = 6;
+  string created_at = 7;
+  string published_at = 8;
+}
+
+message ListVersionsRequest {
+  string org_name = 1;
+  string skill_name = 2;
+}
+message ListVersionsReply {
+  repeated GetVersionReply items = 1;
+}
+
+message ReviewVersionRequest {
+  string org_name = 1;
+  string skill_name = 2;
+  string version = 3;
+  string action = 4;
+  string comment = 5;
+}
+message ReviewVersionReply {}
+
+message PublishVersionRequest {
+  string org_name = 1;
+  string skill_name = 2;
+  string version = 3;
+}
+message PublishVersionReply {}

@@ -1,0 +1,12 @@
+go 1.23
+
+use (
+	./apps/api
+	./apps/worker
+	./cli/skillvault
+	./packages/canonical-model
+	./packages/validator
+	./packages/scanner
+	./packages/adapter-openclaw
+	./packages/adapter-claude
+)

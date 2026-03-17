@@ -1,0 +1,73 @@
+syntax = "proto3";
+package skill.v1;
+
+option go_package = "github.com/skillvault/api/api/skill/v1;skillv1";
+
+service SkillService {
+  rpc CreateSkill(CreateSkillRequest) returns (CreateSkillReply);
+  rpc GetSkill(GetSkillRequest) returns (GetSkillReply);
+  rpc ListSkills(ListSkillsRequest) returns (ListSkillsReply);
+  rpc UpdateSkill(UpdateSkillRequest) returns (UpdateSkillReply);
+  rpc DeleteSkill(DeleteSkillRequest) returns (DeleteSkillReply);
+}
+
+message CreateSkillRequest {
+  string org_name = 1;
+  string name = 2;
+  string display_name = 3;
+  string description = 4;
+  repeated string tags = 5;
+  string visibility = 6;
+  repeated string runtimes = 7;
+}
+message CreateSkillReply {
+  uint64 id = 1;
+}
+
+message GetSkillRequest {
+  string org_name = 1;
+  string name = 2;
+}
+message GetSkillReply {
+  uint64 id = 1;
+  string org_name = 2;
+  string name = 3;
+  string display_name = 4;
+  string description = 5;
+  repeated string tags = 6;
+  string visibility = 7;
+  repeated string runtimes = 8;
+  string latest_version = 9;
+  uint64 download_count = 10;
+}
+
+message ListSkillsRequest {
+  string keyword = 1;
+  string tag = 2;
+  string runtime = 3;
+  string visibility = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+message ListSkillsReply {
+  repeated GetSkillReply items = 1;
+  int64 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message UpdateSkillRequest {
+  string org_name = 1;
+  string name = 2;
+  string display_name = 3;
+  string description = 4;
+  repeated string tags = 5;
+  string visibility = 6;
+}
+message UpdateSkillReply {}
+
+message DeleteSkillRequest {
+  string org_name = 1;
+  string name = 2;
+}
+message DeleteSkillReply {}
